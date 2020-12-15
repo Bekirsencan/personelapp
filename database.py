@@ -22,8 +22,7 @@ def getProfile(objectid):
     for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"Job_Info"}}]):
         result = JSONEncoder().encode(data)
-        response = json.dumps(result.text, sort_keys = True, indent = 4, separators = (',', ': '))
-        return jsonify(response)
+        return jsonify(result)
     
 
 def onlick_profile(objectid):
