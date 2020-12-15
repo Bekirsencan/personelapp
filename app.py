@@ -20,6 +20,21 @@ def get_profile(objectid):
 @app.route('/onclick_profile_api/<string:objectid>',methods = ['GET'])
 def onclick_profile(objectid):
     return database.onlick_profile(objectid)
-    
+
+@app.route('/register',methods=['POST'])
+def register():
+    data = request.get_json()
+    print(data['Job_Info'])
+    return database.insertProfile(
+        data['userid'],
+        data['profile_picture_url'],
+        data['username'],
+        data['password'],
+        data['name'],
+        data['surname'],
+        data['gender'],
+        data['Job_Info']
+    )
+
 if __name__ == "__main__":
     app.run(debug = True)
