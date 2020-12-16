@@ -10,7 +10,7 @@ job_info_collection = current_database["Job_Info"]
 status_collection = current_database["Status"]
 
 def checkUser_Username(username):
-    for data in profile_collection.find({'Username':username}):
+    for data in profile_collection.find({'username':username}):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
@@ -54,3 +54,6 @@ def insert_status(objectid):
 
 ### UPDATE REQUEST
 
+def update_status(objectid,data):
+    print("update status çalıştı")
+    status_collection.update({'_id':ObjectId(objectid)},{'$set':{'status_name':data["status_name"],'status_color_code':data["status_color_code"]}})

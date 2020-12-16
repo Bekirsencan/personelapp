@@ -7,11 +7,11 @@ api = Api(app)
 
 @app.route('/login_api/<string:username>', methods = ['GET'])
 def login2(username):
-     return database.checkUser_Username(username)
+    return database.checkUser_Username(username)
 
 @app.route('/login_api/<string:username>/<string:password>', methods = ['GET'])
 def login(username,password):
-     return database.check_user(username,password)
+    return database.check_user(username,password)
 
 @app.route('/get_profile_api/<string:objectid>', methods = ['GET'])
 def get_profile(objectid):
@@ -38,8 +38,15 @@ def register():
 @app.route('/update',methods=['POST'])
 def udpate():
     data = request.get_json()
-    print(data["name"])
+    search(data["update_name"],data)
     
-    
+def search(arg,data):
+    print("search çalıştı")
+    switcher = {
+        'status':lambda:database.update_status(data["_id"],data)
+        }
+    return switcher.get(arg,lambda:'Invalid')()
+
+
 if __name__ == "__main__":
     app.run(debug = True)
