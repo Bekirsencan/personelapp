@@ -11,11 +11,11 @@ def login2(username):
 
 @app.route('/login_api/<string:username>/<string:password>', methods = ['GET'])
 def login(username,password):
-     return database.checkUser(username,password)
+     return database.check_user(username,password)
 
 @app.route('/get_profile_api/<string:objectid>', methods = ['GET'])
 def get_profile(objectid):
-    return database.getProfile(objectid)
+    return database.get_profile(objectid)
 
 @app.route('/onclick_profile_api/<string:objectid>',methods = ['GET'])
 def onclick_profile(objectid):
@@ -24,8 +24,7 @@ def onclick_profile(objectid):
 @app.route('/register',methods=['POST'])
 def register():
     data = request.get_json()
-    print(data['Job_Info'])
-    return database.insertProfile(
+    return database.insert_profile(
         data['userid'],
         data['profile_picture_url'],
         data['username'],
@@ -36,5 +35,11 @@ def register():
         data['Job_Info']
     )
 
+@app.route('/update',methods=['POST'])
+def udpate():
+    data = request.get_json()
+    print(data["name"])
+    
+    
 if __name__ == "__main__":
     app.run(debug = True)
