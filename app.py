@@ -25,7 +25,7 @@ def onclick_profile(objectid):
 def register():
     data = request.get_json()
     return database.insert_profile(
-        data['userid'],
+        data['user_id'],
         data['profile_picture_url'],
         data['username'],
         data['password'],
@@ -43,7 +43,10 @@ def udpate():
 def search(arg,data):
     print("search çalıştı")
     switcher = {
-        'status':lambda:database.update_status(data["_id"],data)
+        'status':lambda:database.update_status(data["_id"],data),
+        'contact':lambda:database.update_contact(data["_id"],data),
+        'profile':lambda:database.update_profile(data["_id"],data),
+        'job_info':lambda:database.update_job_info(data["_id"],data)
         }
     return switcher.get(arg,lambda:'Invalid')()
 
