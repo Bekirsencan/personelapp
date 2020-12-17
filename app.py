@@ -4,6 +4,7 @@ import database
 
 app = Flask(__name__)
 api = Api(app)
+user_id = 1
 
 @app.route('/login_api/<string:username>', methods = ['GET'])
 def login2(username):
@@ -23,9 +24,11 @@ def onclick_profile(objectid):
 
 @app.route('/register',methods=['POST'])
 def register():
+    global user_id
+    user_id +=1
     data = request.get_json()
     return database.insert_profile(
-        data['user_id'],
+        user_id,
         data['profile_picture_url'],
         data['username'],
         data['password'],
@@ -34,6 +37,7 @@ def register():
         data['gender'],
         data['Job_Info']
     )
+    
 
 @app.route('/update',methods=['POST'])
 def udpate():

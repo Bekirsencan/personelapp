@@ -9,6 +9,7 @@ profile_collection = current_database["Profile"]
 job_info_collection = current_database["Job_Info"]
 status_collection = current_database["Status"]
 contact_collection = current_database["Contact"]
+user_id = 2
 
 def checkUser_Username(username):
     for data in profile_collection.find({'username':username}):
@@ -40,9 +41,9 @@ def onlick_profile(objectid):
 
 ### POST REQUEST
 ### When users tries to register create database collections 
-def insert_profile(userid,profile_picture_url,username,password,name,surname,gender,job_info):
+def insert_profile(user_id,profile_picture_url,username,password,name,surname,gender,job_info):
     profile_collection.insert(
-        {'User_id':userid,
+        {'user_id':user_id,
          'profile_picture_url':profile_picture_url,
          'username':username,
          'password':password,
@@ -58,7 +59,7 @@ def insert_profile(userid,profile_picture_url,username,password,name,surname,gen
             job_info[0]['job'],
             job_info[0]['about'])
         insert_status(data["_id"])
-        return 'Başarılı'
+        return "200"
 
 def insert_job_info(_id,company_name,department_name,job,about):
     job_info_collection.insert(
