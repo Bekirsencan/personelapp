@@ -44,21 +44,21 @@ def register():
     )
     
 
-@app.route('/update',methods=['POST'])
-def udpate():
+@app.route('/update/<string:update_name>/<string:objectid>',methods=['POST'])
+def udpate(update_name,objectid):
     data = request.get_json()
-    update_by_arg(data["update_name"],data)
+    update_by_arg(update_name,objectid,data)
 
 
-def update_by_arg(arg,data):
+def update_by_arg(update_name,objectid,data):
     print("search çalıştı")
     switcher = {
-        'status':lambda:database.update_status(data["_id"],data),
-        'contact':lambda:database.update_contact(data["_id"],data),
-        'profile':lambda:database.update_profile(data["_id"],data),
-        'job_info':lambda:database.update_job_info(data["_id"],data)
+        'status':lambda:database.update_status(objectid,data),
+        'contact':lambda:database.update_contact(objectid,data),
+        'profile':lambda:database.update_profile(objectid,data),
+        'job_info':lambda:database.update_job_info(objectid,data)
         }
-    return switcher.get(arg,lambda:'Invalid')()
+    return switcher.get(update_name,lambda:'Invalid')()
 
 def query_by_arg(arg,object_id):
     switcher = {

@@ -24,9 +24,22 @@ def check_user(username,password):
 
 ### After login return profile and job_info from database 
 def get_profile(objectid):
-    
     for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
-                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"Job_Info"}}]):
+                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"Job_Info"}},
+                                              {'$project':{
+                                                  '_id':1,
+                                                  'username':1,
+                                                  'password':1,
+                                                  'profile_picture_url':1,
+                                                  'name':1,
+                                                  'surname':1,
+                                                  'gender':1,
+                                                  'user_id':1,
+                                                  'Job_Info.company_name':1,
+                                                  'Job_Info.department_name':1,
+                                                  'Job_Info.job':1,
+                                                  'Job_Info.about':1
+                                              }}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
     
@@ -111,7 +124,7 @@ def update_job_info(objectid,data):
          'job':data["job"],
          'about':data["about"]
          }})
-    return "200"
+    return "Başarılı"
 
 ### QUERY REQUEST
 def query_by_status(objectid):
