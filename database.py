@@ -68,6 +68,7 @@ def insert_job_info(_id,company_name,department_name,job,about):
          'department_name':department_name,
          'job':job,'about':about}
         )
+    return "200"
 
 def insert_status(objectid):
     status_collection.insert(
@@ -75,6 +76,7 @@ def insert_status(objectid):
          'status_name':"çevrimiçi",
          'status_color_code':'#008000'}
         )
+    return "200"
 
 ### UPDATE REQUEST
 
@@ -83,6 +85,7 @@ def update_status(objectid,data):
         {'status_name':data["status_name"],
          'status_color_code':data["status_color_code"]
          }})
+    return "200"
 
 def update_contact(objectid,data):
     print("update çalıştı")
@@ -90,16 +93,16 @@ def update_contact(objectid,data):
         {'email':data["email"],
          'number':data["number"]
          }})
+    return "200"
 
 def update_profile(objectid,data):
     profile_collection.update({'_id':ObjectId(objectid)},{'$set':
-        {'user_id':data["user_id"],
-         'username':data["username"],
+        {'username':data["username"],
          'password':data["password"],
          'name':data["name"],
-         'surname':data["surname"],
-         'gender':data["gender"]
+         'surname':data["surname"]
          }})
+    return "200"
 
 def update_job_info(objectid,data):
     job_info_collection.update({'_id':ObjectId(objectid)},{'$set':
@@ -108,3 +111,10 @@ def update_job_info(objectid,data):
          'job':data["job"],
          'about':data["about"]
          }})
+    return "200"
+
+### QUERY REQUEST
+def query_by_status(objectid):
+    result = []
+
+

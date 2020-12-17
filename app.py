@@ -22,6 +22,11 @@ def get_profile(objectid):
 def onclick_profile(objectid):
     return database.onlick_profile(objectid)
 
+@app.route('/query/<string:objectid>/<int:arg>',methods=['GET'])
+def query(objectid,arg):
+    query_by_arg(arg,objectid)
+
+
 @app.route('/register',methods=['POST'])
 def register():
     global user_id
@@ -42,15 +47,23 @@ def register():
 @app.route('/update',methods=['POST'])
 def udpate():
     data = request.get_json()
-    search(data["update_name"],data)
-    
-def search(arg,data):
+    update_by_arg(data["update_name"],data)
+
+
+def update_by_arg(arg,data):
     print("search çalıştı")
     switcher = {
         'status':lambda:database.update_status(data["_id"],data),
         'contact':lambda:database.update_contact(data["_id"],data),
         'profile':lambda:database.update_profile(data["_id"],data),
         'job_info':lambda:database.update_job_info(data["_id"],data)
+        }
+    return switcher.get(arg,lambda:'Invalid')()
+
+def query_by_arg(arg,object_id):
+    switcher = {
+        '0':lambda:database.query_by_status(object_id),
+        '1':lambda:database.query_by_department_name(object_id)
         }
     return switcher.get(arg,lambda:'Invalid')()
 
