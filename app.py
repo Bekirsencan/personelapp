@@ -37,17 +37,16 @@ def register():
         data['profile_picture_url'],
         data['username'],
         data['password'],
-        data['name'],
-        data['surname'],
+        data['name_surname'],
         data['gender'],
-        data['Job_Info']
+        data['job_info']
     )
     
 
 @app.route('/update/<string:update_name>/<string:objectid>',methods=['POST'])
 def udpate(update_name,objectid):
     data = request.get_json()
-    update_by_arg(update_name,objectid,data)
+    return update_by_arg(update_name,objectid,data)
 
 
 def update_by_arg(update_name,objectid,data):

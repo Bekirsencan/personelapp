@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask import Response
 
+
 client = MongoClient("mongodb+srv://bekirsencan:Turtoise@cluster0.vfdtl.mongodb.net/PersonelAPP?retryWrites=true&w=majority")
 current_database = client['PersonelAPP']
 profile_collection = current_database["Profile"]
@@ -25,20 +26,9 @@ def check_user(username,password):
 ### After login return profile and job_info from database 
 def get_profile(objectid):
     for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
-                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"Job_Info"}},
+                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
                                               {'$project':{
-                                                  '_id':1,
-                                                  'username':1,
-                                                  'password':1,
-                                                  'profile_picture_url':1,
-                                                  'name':1,
-                                                  'surname':1,
-                                                  'gender':1,
-                                                  'user_id':1,
-                                                  'Job_Info.company_name':1,
-                                                  'Job_Info.department_name':1,
-                                                  'Job_Info.job':1,
-                                                  'Job_Info.about':1
+                                                  'job_info._id':0
                                               }}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
@@ -46,22 +36,27 @@ def get_profile(objectid):
 ### When user click profile returns profile,job_info and contact from database
 def onlick_profile(objectid):
     for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
-                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"Job_Info"}},
-                                              {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"Contact"}}]):
+                                              {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
+                                              {'$unwind':'$job_info'},
+                                              {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
+                                              {'$unwind':'$contact'},
+                                              {'$project':{
+                                                  'job_info._id':0,
+                                                  'contact._id':0
+                                              }}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
 
 ### POST REQUEST
 ### When users tries to register create database collections 
-def insert_profile(user_id,profile_picture_url,username,password,name,surname,gender,job_info):
+def insert_profile(user_id,profile_picture_url,username,password,name_surname,gender,job_info):
     profile_collection.insert(
         {'user_id':user_id,
          'profile_picture_url':profile_picture_url,
          'username':username,
          'password':password,
-         'name':name,
-         'surname':surname,
+         'name_surname':name_surname,
          'gender':gender}
         )
     for data in profile_collection.find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
@@ -98,10 +93,9 @@ def update_status(objectid,data):
         {'status_name':data["status_name"],
          'status_color_code':data["status_color_code"]
          }})
-    return "200"
+    return  "200"
 
 def update_contact(objectid,data):
-    print("update çalıştı")
     contact_collection.update({'_id':ObjectId(objectid)},{'$set':
         {'email':data["email"],
          'number':data["number"]
@@ -113,9 +107,10 @@ def update_profile(objectid,data):
         {'username':data["username"],
          'password':data["password"],
          'name':data["name"],
+         'profile_picture_url':data["profile_picture_url"],
          'surname':data["surname"]
          }})
-    return "200"
+    return  "200"
 
 def update_job_info(objectid,data):
     job_info_collection.update({'_id':ObjectId(objectid)},{'$set':
@@ -124,10 +119,9 @@ def update_job_info(objectid,data):
          'job':data["job"],
          'about':data["about"]
          }})
-    return "Başarılı"
+    return "200"
 
-### QUERY REQUEST
-def query_by_status(objectid):
-    result = []
+
+    
 
 
