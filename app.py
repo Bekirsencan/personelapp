@@ -20,7 +20,7 @@ def get_profile(objectid):
 
 @app.route('/onclick_profile_api/<string:objectid>',methods = ['GET'])
 def onclick_profile(objectid):
-    return database.onlick_profile(objectid)
+    return database.onclick_profile(objectid)
 
 @app.route('/query/<string:objectid>/<int:arg>',methods=['GET'])
 def query(objectid,arg):

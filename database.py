@@ -34,16 +34,13 @@ def get_profile(objectid):
         return Response(result,mimetype='application/json')
     
 ### When user click profile returns profile,job_info and contact from database
-def onlick_profile(objectid):
+def onclick_profile(objectid):
     for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
                                               {'$unwind':'$job_info'},
                                               {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
-                                              {'$unwind':'$contact'},
-                                              {'$project':{
-                                                  'job_info._id':0,
-                                                  'contact._id':0
-                                              }}]):
+                                              {'$unwind':'$contact'}
+                                              ]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
@@ -67,6 +64,7 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
             job_info[0]['job'],
             job_info[0]['about'])
         insert_status(data["_id"])
+        insert_contact(data["_id"])
         return "200"
 
 def insert_job_info(_id,company_name,department_name,job,about):
@@ -77,6 +75,17 @@ def insert_job_info(_id,company_name,department_name,job,about):
          'job':job,'about':about}
         )
     return "200"
+    
+
+def insert_contact(objectid):
+    contact_collection.insert(
+        {
+            '_id':objectid,
+            'email':"",
+            'number':""
+        }  
+    )
+    return "200"
 
 def insert_status(objectid):
     status_collection.insert(
@@ -85,6 +94,7 @@ def insert_status(objectid):
          'status_color_code':'#008000'}
         )
     return "200"
+
 
 ### UPDATE REQUEST
 
@@ -106,9 +116,8 @@ def update_profile(objectid,data):
     profile_collection.update({'_id':ObjectId(objectid)},{'$set':
         {'username':data["username"],
          'password':data["password"],
-         'name':data["name"],
+         'name_surname':data["name_surname"],
          'profile_picture_url':data["profile_picture_url"],
-         'surname':data["surname"]
          }})
     return  "200"
 
