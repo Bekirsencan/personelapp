@@ -6,26 +6,21 @@ from flask import Response
 
 client = MongoClient("mongodb+srv://bekirsencan:Turtoise@cluster0.vfdtl.mongodb.net/PersonelAPP?retryWrites=true&w=majority")
 current_database = client['PersonelAPP']
-profile_collection = current_database["Profile"]
-job_info_collection = current_database["Job_Info"]
-status_collection = current_database["Status"]
-contact_collection = current_database["Contact"]
-user_id = 2
 
 def checkUser_Username(username):
-    for data in profile_collection.find({'username':username}):
+    for data in current_database["Profile"].find({'username':username}):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
 ### GET REQUEST
 ### Check if username and password exist
 def check_user(username,password):
-    for data in profile_collection.find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
+    for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         return  get_profile(data["_id"]) 
 
 ### After login return profile and job_info from database 
 def get_profile(objectid):
-    for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
+    for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
                                               {'$project':{
                                                   'job_info._id':0
@@ -35,7 +30,7 @@ def get_profile(objectid):
     
 ### When user click profile returns profile,job_info and contact from database
 def onclick_profile(objectid):
-    for data in profile_collection.aggregate([{'$match':{'_id':ObjectId(objectid)}},
+    for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
                                               {'$unwind':'$job_info'},
                                               {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
@@ -47,8 +42,8 @@ def onclick_profile(objectid):
 
 ### POST REQUEST
 ### When users tries to register create database collections 
-def insert_profile(user_id,profile_picture_url,username,password,name_surname,gender,job_info):
-    profile_collection.insert(
+def insert_profile(user_id,profile_picture_url,username,password,name_surname,gender,job_info,contact):
+    current_database["Profile"].insert(
         {'user_id':user_id,
          'profile_picture_url':profile_picture_url,
          'username':username,
@@ -56,7 +51,7 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
          'name_surname':name_surname,
          'gender':gender}
         )
-    for data in profile_collection.find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
+    for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         insert_job_info(
             data["_id"],
             job_info[0]['company_name'],
@@ -64,11 +59,15 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
             job_info[0]['job'],
             job_info[0]['about'])
         insert_status(data["_id"])
-        insert_contact(data["_id"])
+        insert_contact(
+            data["_id"],
+            contact[0]['email'],
+            contact[0]['number']
+            )
         return "200"
 
 def insert_job_info(_id,company_name,department_name,job,about):
-    job_info_collection.insert(
+    current_database["Job_Info"].insert(
         {'_id':_id,
          'company_name':company_name,
          'department_name':department_name,
@@ -77,18 +76,18 @@ def insert_job_info(_id,company_name,department_name,job,about):
     return "200"
     
 
-def insert_contact(objectid):
-    contact_collection.insert(
+def insert_contact(objectid,email,number):
+    current_database["Contact"].insert(
         {
             '_id':objectid,
-            'email':"",
-            'number':""
+            'email':email,
+            'number':number
         }  
     )
     return "200"
 
 def insert_status(objectid):
-    status_collection.insert(
+    current_database["Status"].insert(
         {'_id':objectid,
          'status_name':"çevrimiçi",
          'status_color_code':'#008000'}
@@ -99,21 +98,21 @@ def insert_status(objectid):
 ### UPDATE REQUEST
 
 def update_status(objectid,data):
-    status_collection.update({'_id':ObjectId(objectid)},{'$set':
+    current_database["Status"].update({'_id':ObjectId(objectid)},{'$set':
         {'status_name':data["status_name"],
          'status_color_code':data["status_color_code"]
          }})
     return  "200"
 
 def update_contact(objectid,data):
-    contact_collection.update({'_id':ObjectId(objectid)},{'$set':
+    current_database["Contact"].update({'_id':ObjectId(objectid)},{'$set':
         {'email':data["email"],
          'number':data["number"]
          }})
     return "200"
 
 def update_profile(objectid,data):
-    profile_collection.update({'_id':ObjectId(objectid)},{'$set':
+    current_database["Profile"].update({'_id':ObjectId(objectid)},{'$set':
         {'username':data["username"],
          'password':data["password"],
          'name_surname':data["name_surname"],
@@ -122,7 +121,7 @@ def update_profile(objectid,data):
     return  "200"
 
 def update_job_info(objectid,data):
-    job_info_collection.update({'_id':ObjectId(objectid)},{'$set':
+    current_database["Job_Info"].update({'_id':ObjectId(objectid)},{'$set':
         {'company_name':data["company_name"],
          'department_name':data["department_name"],
          'job':data["job"],
@@ -130,7 +129,26 @@ def update_job_info(objectid,data):
          }})
     return "200"
 
-
-    
+### QUERY REQUEST
+def query_by_department_name(department_name):
+    cursor = current_database["Job_Info"].aggregate([{'$match':{'department_name':department_name}},
+        {'$lookup':{'from':"Profile",'localField':"_id",'foreignField':"_id",'as':"profile"}},
+        {'$unwind':'$profile'},
+        {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
+        {'$unwind':'$contact'},
+        {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
+        {'$unwind':'$status'},
+        {'$project':{
+            'profile._id':0,
+            'profile.user_id':0,
+            'profile.gender':0,
+            'contact._id':0,
+            'status._id':0
+        }}
+        ])
+    result = []
+    for document in cursor:
+        result.append(document)
+    return Response(JSONEncoder().encode(result),mimetype='application/json')    
 
 

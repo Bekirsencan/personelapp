@@ -22,11 +22,12 @@ def get_profile(objectid):
 def onclick_profile(objectid):
     return database.onclick_profile(objectid)
 
-@app.route('/query/<string:objectid>/<int:arg>',methods=['GET'])
-def query(objectid,arg):
-    query_by_arg(arg,objectid)
+@app.route('/query/<string:department_name>',methods=['GET'])
+def query(department_name):
+    return database.query_by_department_name(department_name)
 
-
+    
+    
 @app.route('/register',methods=['POST'])
 def register():
     global user_id
@@ -39,7 +40,8 @@ def register():
         data['password'],
         data['name_surname'],
         data['gender'],
-        data['job_info']
+        data['job_info'],
+        data['contact']
     )
     
 
@@ -50,7 +52,6 @@ def udpate(update_name,objectid):
 
 
 def update_by_arg(update_name,objectid,data):
-    print("search çalıştı")
     switcher = {
         'status':lambda:database.update_status(objectid,data),
         'contact':lambda:database.update_contact(objectid,data),
@@ -58,13 +59,6 @@ def update_by_arg(update_name,objectid,data):
         'job_info':lambda:database.update_job_info(objectid,data)
         }
     return switcher.get(update_name,lambda:'Invalid')()
-
-def query_by_arg(arg,object_id):
-    switcher = {
-        '0':lambda:database.query_by_status(object_id),
-        '1':lambda:database.query_by_department_name(object_id)
-        }
-    return switcher.get(arg,lambda:'Invalid')()
 
 
 if __name__ == "__main__":
