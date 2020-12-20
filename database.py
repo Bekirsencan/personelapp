@@ -22,8 +22,10 @@ def check_user(username,password):
 def get_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
+                                              {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
                                               {'$project':{
-                                                  'job_info._id':0
+                                                  'job_info._id':0,
+                                                  'status._id':0
                                               }}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
@@ -51,6 +53,8 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
          'name_surname':name_surname,
          'gender':gender}
         )
+    print(job_info)
+    print(contact)
     for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         insert_job_info(
             data["_id"],
@@ -93,6 +97,19 @@ def insert_status(objectid):
          'status_color_code':'#008000'}
         )
     return "200"
+
+def insert_social(objectid,social):
+    current_database["Social"].insert(
+        {
+            '_id':objectid,
+            'social':[
+                {
+                    
+                }
+            ]
+        }
+    )
+    
 
 
 ### UPDATE REQUEST
@@ -140,8 +157,6 @@ def query_by_department_name(department_name):
         {'$unwind':'$status'},
         {'$project':{
             'profile._id':0,
-            'profile.user_id':0,
-            'profile.gender':0,
             'contact._id':0,
             'status._id':0
         }}

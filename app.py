@@ -50,6 +50,10 @@ def udpate(update_name,objectid):
     data = request.get_json()
     return update_by_arg(update_name,objectid,data)
 
+@app.route('/social',methods=["POST"])
+def social():
+    data = request.get_json()
+    return database.insert_social()
 
 def update_by_arg(update_name,objectid,data):
     switcher = {
