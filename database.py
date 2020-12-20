@@ -1,5 +1,6 @@
+from flask.json import jsonify
 from encoder import JSONEncoder
-from pymongo import MongoClient
+from pymongo import MongoClient, cursor
 from bson.objectid import ObjectId
 from flask import Response
 
@@ -13,12 +14,10 @@ def checkUser_Username(username):
         return Response(result,mimetype='application/json')
 
 ### GET REQUEST
-### Check if username and password exist
 def check_user(username,password):
     for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         return  get_profile(data["_id"]) 
 
-### After login return profile and job_info from database 
 def get_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
@@ -30,7 +29,6 @@ def get_profile(objectid):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
     
-### When user click profile returns profile,job_info and contact from database
 def onclick_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
@@ -41,9 +39,12 @@ def onclick_profile(objectid):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
+def get_social(objectid):
+    for data in current_database["Social"].find({'_id':ObjectId(objectid)},{'_id':0}):
+        return jsonify(data)
+
 
 ### POST REQUEST
-### When users tries to register create database collections 
 def insert_profile(user_id,profile_picture_url,username,password,name_surname,gender,job_info,contact):
     current_database["Profile"].insert(
         {'user_id':user_id,
@@ -103,12 +104,12 @@ def insert_social(objectid):
             '_id':objectid,
             'social':[
                 {
-                    'name':"",
+                    'name':"twitter",
                     'site_url':"",
                     'image_url':""
                 },
                 {
-                    'name':"",
+                    'name':"linkedin",
                     "site_url":"",
                     'image_url':""
                 }

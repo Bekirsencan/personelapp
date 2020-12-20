@@ -1,3 +1,4 @@
+from bson import objectid
 from flask import Flask,request,jsonify
 from flask_restful import Api,Resource
 import database
@@ -26,7 +27,9 @@ def onclick_profile(objectid):
 def query(department_name):
     return database.query_by_department_name(department_name)
 
-    
+@app.route('/social/<string:objectid>',methods=['GET'])
+def social(objectid):
+    return database.get_social(objectid)
     
 @app.route('/register',methods=['POST'])
 def register():
