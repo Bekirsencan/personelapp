@@ -53,8 +53,6 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
          'name_surname':name_surname,
          'gender':gender}
         )
-    print(job_info)
-    print(contact)
     for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         insert_job_info(
             data["_id"],
@@ -63,6 +61,7 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
             job_info[0]['job'],
             job_info[0]['about'])
         insert_status(data["_id"])
+        insert_social(data["_id"])
         insert_contact(
             data["_id"],
             contact[0]['email'],
@@ -98,13 +97,20 @@ def insert_status(objectid):
         )
     return "200"
 
-def insert_social(objectid,social):
+def insert_social(objectid):
     current_database["Social"].insert(
         {
             '_id':objectid,
             'social':[
                 {
-                    
+                    'name':"",
+                    'site_url':"",
+                    'image_url':""
+                },
+                {
+                    'name':"",
+                    "site_url":"",
+                    'image_url':""
                 }
             ]
         }
@@ -145,6 +151,20 @@ def update_job_info(objectid,data):
          'about':data["about"]
          }})
     return "200"
+
+def update_social(objectid,data):
+    current_database["Social"].update({'_id':ObjectId(objectid),'social.name':'twitter'},{
+        '$set':{
+            'social.$.site_url':data['social'][0]['site_url'],
+            'social.$.image_url':data['social'][0]['image_url']
+        }
+    })
+    current_database["Social"].update({'_id':ObjectId(objectid),'social.name':'linkedin'},{
+        '$set':{
+            'social.$.site_url':data['social'][1]['site_url'],
+            'social.$.image_url':data['social'][1]['image_url']
+        }
+    })
 
 ### QUERY REQUEST
 def query_by_department_name(department_name):
