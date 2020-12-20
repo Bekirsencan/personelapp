@@ -166,6 +166,7 @@ def update_social(objectid,data):
             'social.$.image_url':data['social'][1]['image_url']
         }
     })
+    return "200"
 
 ### QUERY REQUEST
 def query_by_department_name(department_name):
