@@ -48,15 +48,15 @@ def register():
     )
     
 
-@app.route('/update/<string:update_name>/<string:objectid>',methods=['POST'])
-def udpate(update_name,objectid):
+@app.route('/update/<string:update_name>',methods=['POST'])
+def udpate(update_name):
     data = request.get_json()
-    return update_by_arg(update_name,objectid,data)
+    return update_by_arg(update_name,data['_id'],data)
 
-@app.route('/update/status',methods=["POST"])
-def update_status():
-    data = request.get_json()
-    return database.update_status(data['_id'],data)
+# @app.route('/update/status',methods=["POST"])
+# def update_status():
+#     data = request.get_json()
+#     return database.update_status(data['_id'],data)
 
 
 
@@ -66,7 +66,6 @@ def update_by_arg(update_name,objectid,data):
         'contact':lambda:database.update_contact(objectid,data),
         'profile':lambda:database.update_profile(objectid,data),
         'job_info':lambda:database.update_job_info(objectid,data),
-        'status':lambda:database.update_status(objectid,data)
         }
     return switcher.get(update_name,lambda:'Invalid')()
 
