@@ -53,14 +53,19 @@ def udpate(update_name,objectid):
     data = request.get_json()
     return update_by_arg(update_name,objectid,data)
 
+@app.route('/update/status',methods=["POST"])
+def update_status():
+    data = request.get_json()
+    return database.update_status(data['_id'],data)
+
+
 
 def update_by_arg(update_name,objectid,data):
     switcher = {
         'status':lambda:database.update_status(objectid,data),
         'contact':lambda:database.update_contact(objectid,data),
         'profile':lambda:database.update_profile(objectid,data),
-        'job_info':lambda:database.update_job_info(objectid,data),
-        'social':lambda:database.update_social(objectid,data)
+        'job_info':lambda:database.update_job_info(objectid,data)
         }
     return switcher.get(update_name,lambda:'Invalid')()
 
