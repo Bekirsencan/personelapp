@@ -21,6 +21,7 @@ def check_user(username,password):
 def get_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
+                                              {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
                                               {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
