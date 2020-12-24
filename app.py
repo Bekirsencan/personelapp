@@ -63,7 +63,6 @@ def udpate(update_name):
 def update_by_arg(update_name,objectid,data):
     switcher = {
         'status':lambda:database.update_status(objectid,data),
-        'contact':lambda:database.update_contact(objectid,data),
         'profile':lambda:database.update_profile(objectid,data),
         'job_info':lambda:database.update_job_info(objectid,data),
         'status':lambda:database.update_status(objectid,data)

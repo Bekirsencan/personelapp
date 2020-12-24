@@ -125,19 +125,16 @@ def update_status(objectid,data):
          }})
     return  "200"
 
-def update_contact(objectid,data):
-    current_database["Contact"].update({'_id':ObjectId(objectid)},{'$set':
-        {'email':data["email"],
-         'number':data["number"]
-         }})
-    return "200"
-
 def update_profile(objectid,data):
     current_database["Profile"].update({'_id':ObjectId(objectid)},{'$set':
         {'username':data["username"],
          'password':data["password"],
          'name_surname':data["name_surname"],
          'profile_picture_url':data["profile_picture_url"],
+         }})
+    current_database["Contact"].update({'_id':ObjectId(objectid)},{'$set':
+        {'email':data["contact"][0]['email'],
+         'number':data["contact"][0]['number']
          }})
     return  "200"
 
