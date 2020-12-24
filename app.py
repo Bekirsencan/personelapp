@@ -65,7 +65,7 @@ def update_by_arg(update_name,objectid,data):
         'status':lambda:database.update_status(objectid,data),
         'profile':lambda:database.update_profile(objectid,data),
         'job_info':lambda:database.update_job_info(objectid,data),
-        'status':lambda:database.update_status(objectid,data)
+        'social':lambda:database.update_social(objectid,data)
         }
     return switcher.get(update_name,lambda:'Invalid')()
 
