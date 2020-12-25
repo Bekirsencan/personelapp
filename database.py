@@ -37,8 +37,11 @@ def onclick_profile(objectid):
         return Response(result,mimetype='application/json')
 
 def get_social(objectid):
+    result = []
     for data in current_database["Social"].find({'_id':ObjectId(objectid)},{'_id':0}):
-        return jsonify(data)
+        result.append(data['social'][0])
+        result.append(data['social'][1])
+    return jsonify(result)
 
 
 ### POST REQUEST
