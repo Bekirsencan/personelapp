@@ -1,33 +1,32 @@
-from flask.json import jsonify
-from encoder import JSONEncoder
-from pymongo import MongoClient, cursor
-from bson.objectid import ObjectId
-from flask import Response
+from flask.json import jsonify ### Verileri JSON formatında geri döndürmek için gerekli kütüphane
+from encoder import JSONEncoder ### encoder.py dosyasındaki Encoder ı kullanmak için gereklidir.
+from pymongo import MongoClient ### MongoDB bağlantıs için gerekli kütüphane
+from bson.objectid import ObjectId ### objectid için gerekli olan kütüphane
+from flask import Response ### API'a gelen isteklerde response döndürmek için gerekli olan kütüphane
 
 
-client = MongoClient("mongodb+srv://bekirsencan:Turtoise@cluster0.vfdtl.mongodb.net/PersonelAPP?retryWrites=true&w=majority")
-current_database = client['PersonelAPP']
+client = MongoClient("mongodb+srv://bekirsencan:Turtoise@cluster0.vfdtl.mongodb.net/PersonelAPP?retryWrites=true&w=majority")### MongoDB  bağlantısı oluşturdum.
+current_database = client['PersonelAPP']### MongoDB üzerinde hangi veritabanını kullanacağımı belirttim.
 
-def checkUser_Username(username):
-    for data in current_database["Profile"].find({'username':username}):
-        result = JSONEncoder().encode(data)
-        return Response(result,mimetype='application/json')
+
 
 ### GET REQUEST
+
+### Client login işlemi sonucunda bu fonksiyon çalışıyor. Client username ve password kontrolü sağlanıyor. Giriş doğru ise get_profile() fonksiyonu çalışıyor.
 def check_user(username,password):
     for data in current_database["Profile"].find({'$and':[{'username':username},{'password':password}]},{'_id':1}):
         return  get_profile(data["_id"]) 
 
+### Client başarılı giriş yaptığında bu fonksiyon çalışır. Bu fonksiyon ile veritabanından kullanıcının bilgileri uygulamaya gönderilir.
 def get_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
                                               {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
-                                              {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
-                                              {'$lookup':{'from':"Social",'localField':"_id",'foreignField':"_id",'as':"social"}},
-                                              {'$project':{'social._id':0}}]):
+                                              {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}}]):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
     
+### Client uygulama üzerinde profiline gitmek istediği zaman bu fonksiyon çalışır. Geri dönüş olarak Client'ın profilde ihtiyacı olan veriler döner.
 def onclick_profile(objectid):
     for data in current_database["Profile"].aggregate([{'$match':{'_id':ObjectId(objectid)}},
                                               {'$lookup':{'from':"Job_Info",'localField':"_id",'foreignField':"_id",'as':"job_info"}},
@@ -38,6 +37,7 @@ def onclick_profile(objectid):
         result = JSONEncoder().encode(data)
         return Response(result,mimetype='application/json')
 
+### Client'ın eğer ekleme yaptıysa sosyal medya linkleri döner. Eğer ekleme yapılmadıysa boş döner.
 def get_social(objectid):
     result = []
     for data in current_database["Social"].find({'_id':ObjectId(objectid)},{'_id':0}):
@@ -47,6 +47,10 @@ def get_social(objectid):
 
 
 ### POST REQUEST
+
+### Yeni kayıt oluştururken bu fonksiyon kullanılır. Bu fonksiyon ile ilk önce profil veritabanına eklenir. Ardından MongoDB ye özel her bir collection için
+### unique olan objectid'yi alıp kullanıcının diğer verilerini eklemek için kullanıyorum. Bu referans ile veritabanı oluşturmama olanak veriyor. Bunların ardından 
+### insert_job_info(),insert_status(),insert_social(),insert_contact() fonksiyonları çalışır.
 def insert_profile(user_id,profile_picture_url,username,password,name_surname,gender,job_info,contact):
     current_database["Profile"].insert(
         {'user_id':user_id,
@@ -72,6 +76,7 @@ def insert_profile(user_id,profile_picture_url,username,password,name_surname,ge
             )
         return "200"
 
+### Client kayıt olduğunda iş bilgileri burada veritabanına aktarılır.
 def insert_job_info(_id,company_name,department_name,job,about):
     current_database["Job_Info"].insert(
         {'_id':_id,
@@ -81,7 +86,7 @@ def insert_job_info(_id,company_name,department_name,job,about):
         )
     return "200"
     
-
+### Client kayıt olduğunda iletişim bilgileri burada veritabanına aktarılır.
 def insert_contact(objectid,email,number):
     current_database["Contact"].insert(
         {
@@ -92,6 +97,7 @@ def insert_contact(objectid,email,number):
     )
     return "200"
 
+### Client kayıt olduğunda durum bilgisi burada veritabanına aktarılır.
 def insert_status(objectid):
     current_database["Status"].insert(
         {'_id':objectid,
@@ -100,6 +106,7 @@ def insert_status(objectid):
         )
     return "200"
 
+### Client kayıt olduğunda sosyal medya bilgisi burada veritabanına aktarılır.
 def insert_social(objectid):
     current_database["Social"].insert(
         {
@@ -123,6 +130,7 @@ def insert_social(objectid):
 
 ### UPDATE REQUEST
 
+### Kullanıcı durumunu güncellemek istediği zaman bu fonksyion çalışır.
 def update_status(objectid,data):
     current_database["Status"].update({'_id':ObjectId(objectid)},{'$set':
         {'status_name':data["status_name"],
@@ -130,6 +138,7 @@ def update_status(objectid,data):
          }})
     return  "200"
 
+### Kullanıcı profilini güncellemek istediği zaman bu fonksiyon çalışır.
 def update_profile(objectid,data):
     current_database["Profile"].update({'_id':ObjectId(objectid)},{'$set':
         {'username':data["username"],
@@ -143,6 +152,7 @@ def update_profile(objectid,data):
          }})
     return  "200"
 
+### Kullanıcı iş bilgilerini güncellemek istediği zaman bu fonksiyon çalışır.
 def update_job_info(objectid,data):
     current_database["Job_Info"].update({'_id':ObjectId(objectid)},{'$set':
         {'company_name':data["company_name"],
@@ -152,6 +162,7 @@ def update_job_info(objectid,data):
          }})
     return "200"
 
+### Kullanıcı sosyal medya bilgilerini güncellemek istediği zaman bu fonksiyon çalışır.
 def update_social(objectid,data):
     current_database["Social"].update({'_id':ObjectId(objectid),'social.name':'twitter'},{
         '$set':{
@@ -168,6 +179,8 @@ def update_social(objectid,data):
     return "200"
 
 ### QUERY REQUEST
+
+### Uygulamanın ana sayfasında aynı departmandaki kişilerin profil,durum,iletişim bilgileri,sosyal medyalarını döndürür.
 def query_by_department_name(department_name):
     cursor = current_database["Job_Info"].aggregate([{'$match':{'department_name':department_name}},
         {'$lookup':{'from':"Profile",'localField':"_id",'foreignField':"_id",'as':"profile"}},
@@ -175,7 +188,10 @@ def query_by_department_name(department_name):
         {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
         {'$unwind':'$contact'},
         {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
-        {'$unwind':'$status'}
+        {'$unwind':'$status'},
+        {'$lookup':{'from':"Social",'localField':"_id",'foreignField':"_id",'as':"social"}},
+        {'$unwind':'$social'},
+        {'$project':{'social._id':0}}
         ])
     result = []
     for document in cursor:
