@@ -19,6 +19,7 @@ def login(username,password):
 @app.route('/onclick_profile_api/<string:objectid>',methods = ['GET'])
 def onclick_profile(objectid):
     return database.onclick_profile(objectid)
+
 ### Giriş yapan kullanıcının departmanına göre o departmandaki tüm kullanıcılar listelenirken bu Route'a Get isteği atılır.
 @app.route('/query/<string:department_name>',methods=['GET'])
 def query(department_name):

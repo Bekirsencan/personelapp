@@ -1,6 +1,6 @@
 from flask.json import jsonify ### Verileri JSON formatında geri döndürmek için gerekli kütüphane
 from encoder import JSONEncoder ### encoder.py dosyasındaki Encoder ı kullanmak için gereklidir.
-from pymongo import MongoClient ### MongoDB bağlantıs için gerekli kütüphane
+from pymongo import MongoClient,cursor  ### MongoDB bağlantıs için gerekli kütüphane
 from bson.objectid import ObjectId ### objectid için gerekli olan kütüphane
 from flask import Response ### API'a gelen isteklerde response döndürmek için gerekli olan kütüphane
 
@@ -180,6 +180,7 @@ def update_social(objectid,data):
 
 ### QUERY REQUEST
 
+
 ### Uygulamanın ana sayfasında aynı departmandaki kişilerin profil,durum,iletişim bilgileri,sosyal medyalarını döndürür.
 def query_by_department_name(department_name):
     cursor = current_database["Job_Info"].aggregate([{'$match':{'department_name':department_name}},
@@ -196,6 +197,6 @@ def query_by_department_name(department_name):
     result = []
     for document in cursor:
         result.append(document)
-    return Response(JSONEncoder().encode(result),mimetype='application/json')    
+    return Response(JSONEncoder().encode(result),mimetype='application/json')   
 
 
