@@ -179,9 +179,8 @@ def update_social(objectid,data):
     return "200"
 
 ### QUERY REQUEST
-
-
 ### Uygulamanın ana sayfasında aynı departmandaki kişilerin profil,durum,iletişim bilgileri,sosyal medyalarını döndürür.
+
 def query_by_department_name(department_name):
     cursor = current_database["Job_Info"].aggregate([{'$match':{'department_name':department_name}},
         {'$lookup':{'from':"Profile",'localField':"_id",'foreignField':"_id",'as':"profile"}},
@@ -189,12 +188,13 @@ def query_by_department_name(department_name):
         {'$lookup':{'from':"Contact",'localField':"_id",'foreignField':"_id",'as':"contact"}},
         {'$unwind':'$contact'},
         {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
-        {'$unwind':'$status'},
-        {'$lookup':{'from':"Social",'localField':"_id",'foreignField':"_id",'as':"social"}},
-        {'$unwind':'$social'},
-        {'$project':{'social._id':0}}
+        {'$unwind':'$status'}
+        # {'$lookup':{'from':"Social",'localField':"_id",'foreignField':"_id",'as':"social"}},
+        # {'$unwind':'$social'},
+        # {'$project':{'social._id':0}}
         ])
     result = []
+
     for document in cursor:
         result.append(document)
     return Response(JSONEncoder().encode(result),mimetype='application/json')   
