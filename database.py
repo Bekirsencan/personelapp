@@ -189,12 +189,8 @@ def query_by_department_name(department_name):
         {'$unwind':'$contact'},
         {'$lookup':{'from':"Status",'localField':"_id",'foreignField':"_id",'as':"status"}},
         {'$unwind':'$status'}
-        # {'$lookup':{'from':"Social",'localField':"_id",'foreignField':"_id",'as':"social"}},
-        # {'$unwind':'$social'},
-        # {'$project':{'social._id':0}}
         ])
     result = []
-
     for document in cursor:
         result.append(document)
     return Response(JSONEncoder().encode(result),mimetype='application/json')   
